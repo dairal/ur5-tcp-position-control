@@ -4,7 +4,7 @@
 #include "std_msgs/Float64.h"
 #include "control_msgs/JointControllerState.h"
 
-#include "Eigen/Geometry"
+//#include "Eigen/Geometry"
 
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chain.hpp>
