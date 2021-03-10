@@ -4,8 +4,6 @@
 #include "std_msgs/Float64.h"
 #include "control_msgs/JointControllerState.h"
 
-//#include "Eigen/Geometry"
-
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
@@ -54,7 +52,7 @@ float compute_linear(double q_start, double q_goal, float t, float t_max) {
 
 void get_goal_tcp_and_time(KDL::Frame tcp_pos_start, KDL::Vector* vec_tcp_pos_goal, float* t_max) {
 
-	std::cout << "Please define the offset you want to move for each axis and the time in which the motion should be completed:/n";
+	std::cout << "Please define the offset you want to move for each axis and the time in which the motion should be completed:\n";
 
 		//Get user input
 		float x,y,z;
