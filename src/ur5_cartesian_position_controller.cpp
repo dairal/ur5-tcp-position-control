@@ -1,4 +1,5 @@
 #include "ros/ros.h"
+#include <ros/package.h>
 #include "std_msgs/String.h"
 
 #include "std_msgs/Float64.h"
@@ -75,12 +76,18 @@ const int loop_rate_val = 100;
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "talker");
+	std::string urdf_path = ros::package::getPath("ur5-joint-position-control");
+	if(urdf_path.empty()) {
+		ROS_ERROR("ur5-joint-position-control package path was not found");
+	}
+	urdf_path += "/urdf/ur5_jnt_pos_ctrl.urdf";
+	ros::init(argc, argv, "tcp_control");
 
 	ros::NodeHandle n;
 
 	ros::Rate loop_rate(loop_rate_val);
 
+	//Create subscribers for all joint states
 	ros::Subscriber shoulder_pan_joint_sub = n.subscribe("/shoulder_pan_joint_position_controller/state", 1000, get_shoulder_pan_joint_position);
 	ros::Subscriber shoulder_lift_joint_sub = n.subscribe("/shoulder_lift_joint_position_controller/state", 1000, get_shoulder_lift_joint_position);
 	ros::Subscriber elbow_joint_sub = n.subscribe("/elbow_joint_position_controller/state", 1000, get_elbow_joint_position);
@@ -88,6 +95,7 @@ int main(int argc, char **argv)
 	ros::Subscriber wrist_2_joint_sub = n.subscribe("/wrist_2_joint_position_controller/state", 1000, get_wrist_2_joint_position);
 	ros::Subscriber wrist_3_joint_sub = n.subscribe("/wrist_3_joint_position_controller/state", 1000, get_wrist_3_joint_position);
 
+	//Create publishers to send position commands to all joints
 	ros::Publisher joint_com_pub[6]; 
 	joint_com_pub[0] = n.advertise<std_msgs::Float64>("/shoulder_pan_joint_position_controller/command", 1000);
 	joint_com_pub[1] = n.advertise<std_msgs::Float64>("/shoulder_lift_joint_position_controller/command", 1000);
@@ -98,7 +106,7 @@ int main(int argc, char **argv)
 
 	//Parse urdf model and generate KDL tree
 	KDL::Tree ur5_tree;
-	if (!kdl_parser::treeFromFile("/home/ad/catkin_ws/src/ur5_proj/urdf/ur5_rosind.urdf", ur5_tree)){
+	if (!kdl_parser::treeFromFile(urdf_path, ur5_tree)){//"/home/ad/catkin_ws/src/ur5_proj/urdf/ur5_rosind.urdf", ur5_tree)){
    		ROS_ERROR("Failed to construct kdl tree");
    		return false;
 	}
@@ -107,6 +115,7 @@ int main(int argc, char **argv)
 	KDL::Chain ur5_chain;
 	ur5_tree.getChain("base_link", "wrist_3_link", ur5_chain);
 
+	//Create solvers
 	KDL::ChainFkSolverPos_recursive fk_solver(ur5_chain);
 	KDL::ChainIkSolverVel_pinv vel_ik_solver(ur5_chain, 0.00001, 5000);
 	KDL::ChainIkSolverPos_NR ik_solver(ur5_chain, fk_solver, vel_ik_solver, 50000);
@@ -129,6 +138,7 @@ int main(int argc, char **argv)
 		ROS_INFO("Position: %f %f %f", tcp_pos_start.p(0), tcp_pos_start.p(1), tcp_pos_start.p(2));		
 		ROS_INFO("Orientation: %f %f %f", tcp_pos_start.M(0,0), tcp_pos_start.M(1,0), tcp_pos_start.M(2,0));
 
+		//get user input
 		float t_max;
 		KDL::Vector vec_tcp_pos_goal(0.0, 0.0, 0.0);
 		get_goal_tcp_and_time(tcp_pos_start, &vec_tcp_pos_goal, &t_max);
@@ -142,7 +152,7 @@ int main(int argc, char **argv)
 		float t = 0.0;
 		while(t<t_max) {
 			std_msgs::Float64 position[6];
-
+			//Compute next position step for all joints
 			for(int i=0; i<Joints; i++) {
 				position[i].data = compute_linear(jnt_pos_start(i), jnt_pos_goal(i), t, t_max);
 				joint_com_pub[i].publish(position[i]);

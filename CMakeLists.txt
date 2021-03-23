@@ -8,16 +8,12 @@ project(ur5-tcp-position-control)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED cmake_modules)
-#find_package(Eigen REQUIRED)
-find_package(catkin REQUIRED #COMPONENTS cmake_modules
+find_package(catkin REQUIRED
   roscpp
   rospy
   std_msgs
   sensor_msgs
   kdl_parser
-#  eigen_conversions
-#  Eigen
-#  kdl
 )
 
 ## System dependencies are found with CMake's conventions
@@ -112,7 +108,6 @@ find_package(catkin REQUIRED #COMPONENTS cmake_modules
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   CATKIN_DEPENDS message_runtime
-#  DEPENDS Eigen
 #  INCLUDE_DIRS include
 #  LIBRARIES simple_joint_state_pub
 #  CATKIN_DEPENDS roscpp rospy std_msgs
@@ -126,9 +121,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
   ${catkin_INCLUDE_DIRS}
-#  ${Eigen_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -147,9 +140,6 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/simple_joint_state_pub_node.cpp)
 add_executable(tcp_position_controller src/ur5_cartesian_position_controller.cpp)
 target_link_libraries(tcp_position_controller ${catkin_LIBRARIES})
-#add_executable(joint_position_controller src/ur5_joint_position_controller.cpp)
-#target_link_libraries(joint_position_controller ${catkin_LIBRARIES})
-#add_dependencies(joint_state_publisher simple_joint_state_pub)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
