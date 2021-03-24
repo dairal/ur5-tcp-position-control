@@ -106,8 +106,8 @@ int main(int argc, char **argv)
 
 	//Parse urdf model and generate KDL tree
 	KDL::Tree ur5_tree;
-	if (!kdl_parser::treeFromFile(urdf_path, ur5_tree)){//"/home/ad/catkin_ws/src/ur5_proj/urdf/ur5_rosind.urdf", ur5_tree)){
-   		ROS_ERROR("Failed to construct kdl tree");
+	if (!kdl_parser::treeFromFile(urdf_path, ur5_tree)){
+		ROS_ERROR("Failed to construct kdl tree");
    		return false;
 	}
 
@@ -117,8 +117,8 @@ int main(int argc, char **argv)
 
 	//Create solvers
 	KDL::ChainFkSolverPos_recursive fk_solver(ur5_chain);
-	KDL::ChainIkSolverVel_pinv vel_ik_solver(ur5_chain, 0.00001, 5000);
-	KDL::ChainIkSolverPos_NR ik_solver(ur5_chain, fk_solver, vel_ik_solver, 50000);
+	KDL::ChainIkSolverVel_pinv vel_ik_solver(ur5_chain, 0.0001, 1000);
+	KDL::ChainIkSolverPos_NR ik_solver(ur5_chain, fk_solver, vel_ik_solver, 1000);
 
 	//Make sure we have received proper joint angles already
 	for(int i=0; i< 2; i++) {
